@@ -1,0 +1,70 @@
+SELECT * FROM `healthcare-analysis-453902.medicaid_claims_data.healthcare_claims`
+LIMIT 10;
+SELECT * FROM `healthcare-analysis-453902.medicaid_claims_data.provider_details`
+LIMIT 10;
+SELECT * FROM `healthcare-analysis-453902.medicaid_claims_data.drug_formulary`
+LIMIT 10;
+
+/*Join Healthcare Claims with Drug Formulary*/
+
+SELECT 
+    hc.Drug_Name,
+    hc.Drug_Category,
+    hc.Total_Cost,
+    hc.Reimbursement_Amount,
+    df.Brand_Generic,
+    df.Generic_Alternative,
+    df.Rebate_Amount,
+    ROUND(hc.Total_Cost - hc.Reimbursement_Amount, 2) AS Cost_Variance
+FROM `healthcare-analysis-453902.medicaid_claims_data.healthcare_claims` AS hc
+JOIN `healthcare-analysis-453902.medicaid_claims_data.drug_formulary` AS df
+ON hc.Drug_Name = df.Drug_Name
+ORDER BY Cost_Variance DESC
+LIMIT 50;
+
+/*healthcare-analysis-453902.medicaid_claims_data*/
+
+SELECT 
+  hc.Drug_Name,
+  hc.Drug_Category,
+  df.Brand_Generic,
+  df.Generic_Alternative,
+  Round(SUM(hc.Total_Cost),2)  AS Total_Cost, 
+  Round(SUM(hc.Reimbursement_Amount),2)  AS Reimbursement_Amount,
+  Round(SUM(df.Rebate_Amount),2) AS Total_Rebate_Amount,
+  Round(SUM(hc.Total_Cost - hc.Reimbursement_Amount),2) AS Cost_Variance,
+  Round(SUM(hc.Total_Cost - df.Rebate_Amount),2) AS Potential_Savings
+FROM `healthcare-analysis-453902.medicaid_claims_data.healthcare_claims` as hc
+JOIN `healthcare-analysis-453902.medicaid_claims_data.drug_formulary` as df
+ON hc.Drug_Name = df.Drug_Name
+GROUP BY 
+  hc.Drug_Name,
+  hc.Drug_Category,
+  df.Brand_Generic,
+  df.Generic_Alternative
+ORDER BY Total_Cost DESC;
+
+SELECT 
+  hc.Drug_Name,
+  Round(SUM(hc.Total_Cost),2)  AS Total_Cost, 
+  Round(SUM(hc.Reimbursement_Amount),2)  AS Reimbursement_Amount,
+  Round(SUM(df.Rebate_Amount),2) AS Total_Rebate_Amount,
+  Round(SUM(hc.Total_Cost - hc.Reimbursement_Amount),2) AS Cost_Variance,
+  Round(SUM(hc.Total_Cost - df.Rebate_Amount),2) AS Potential_Savings
+FROM `healthcare-analysis-453902.medicaid_claims_data.healthcare_claims` as hc
+JOIN `healthcare-analysis-453902.medicaid_claims_data.drug_formulary` as df
+ON hc.Drug_Name = df.Drug_Name
+GROUP BY 
+  hc.Drug_Name
+ORDER BY Total_Cost DESC;
+
+SELECT 
+  Data_Type
+FROM `healthcare-analysis-453902.medicaid_claims_data.INFORMATION_SCHEMA.COLUMNS`
+WHERE Table_Name = 'healthcare_claims' AND Column_Name = 'Total_Cost';
+
+
+
+
+
+
